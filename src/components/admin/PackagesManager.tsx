@@ -27,6 +27,8 @@ interface PackageData {
   features: string[] | null;
   is_active: boolean;
   display_order: number;
+  category: string;
+  sub_category: string | null;
 }
 
 const PackagesManager = () => {
@@ -83,6 +85,8 @@ const PackagesManager = () => {
         features: formData.features || [],
         is_active: formData.is_active ?? true,
         display_order: packages.length,
+        category: formData.category || "visit",
+        sub_category: formData.category === "tcp" ? (formData.sub_category || "guild") : null,
       });
 
       if (error) throw error;
@@ -113,6 +117,8 @@ const PackagesManager = () => {
           image_url: formData.image_url,
           features: formData.features,
           is_active: formData.is_active,
+          category: formData.category || "visit",
+          sub_category: formData.category === "tcp" ? (formData.sub_category || "guild") : null,
         })
         .eq("id", id);
 
@@ -183,6 +189,8 @@ const PackagesManager = () => {
       image_url: "",
       features: [],
       is_active: true,
+      category: "visit",
+      sub_category: null,
     });
   };
 
@@ -290,6 +298,33 @@ const PackagesManager = () => {
               placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
               rows={3}
             />
+          </div>
+          {/* Category Selection */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Category *</Label>
+              <select
+                value={formData.category || "visit"}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value, sub_category: e.target.value === "tcp" ? "guild" : null })}
+                className="w-full mt-1 rounded-md border border-border bg-card px-3 py-2 text-sm"
+              >
+                <option value="visit">Visit</option>
+                <option value="tcp">TCP</option>
+              </select>
+            </div>
+            {formData.category === "tcp" && (
+              <div>
+                <Label>Sub Category *</Label>
+                <select
+                  value={formData.sub_category || "guild"}
+                  onChange={(e) => setFormData({ ...formData, sub_category: e.target.value })}
+                  className="w-full mt-1 rounded-md border border-border bg-card px-3 py-2 text-sm"
+                >
+                  <option value="guild">Guild</option>
+                  <option value="friend">Friend</option>
+                </select>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Switch
@@ -412,6 +447,33 @@ const PackagesManager = () => {
                       rows={3}
                     />
                   </div>
+                  {/* Category Selection */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Category</Label>
+                      <select
+                        value={formData.category || "visit"}
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value, sub_category: e.target.value === "tcp" ? "guild" : null })}
+                        className="w-full mt-1 rounded-md border border-border bg-card px-3 py-2 text-sm"
+                      >
+                        <option value="visit">Visit</option>
+                        <option value="tcp">TCP</option>
+                      </select>
+                    </div>
+                    {formData.category === "tcp" && (
+                      <div>
+                        <Label>Sub Category</Label>
+                        <select
+                          value={formData.sub_category || "guild"}
+                          onChange={(e) => setFormData({ ...formData, sub_category: e.target.value })}
+                          className="w-full mt-1 rounded-md border border-border bg-card px-3 py-2 text-sm"
+                        >
+                          <option value="guild">Guild</option>
+                          <option value="friend">Friend</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={formData.is_active ?? true}
@@ -456,7 +518,12 @@ const PackagesManager = () => {
                       />
                     )}
                     <div>
-                      <h3 className="font-semibold">{pkg.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{pkg.name}</h3>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary">
+                          {pkg.category === "tcp" ? `TCP / ${pkg.sub_category || "guild"}` : "Visit"}
+                        </span>
+                      </div>
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-primary font-orbitron font-bold">
                           ৳{pkg.price}

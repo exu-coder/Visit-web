@@ -33,6 +33,7 @@ const CreditCouponsManager = () => {
   const [bulkCount, setBulkCount] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isDeletingUsed, setIsDeletingUsed] = useState(false);
 
   const fetchCoupons = async () => {
     setIsLoading(true);
@@ -89,6 +90,31 @@ const CreditCouponsManager = () => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const deleteAllRedeemed = async () => {
+    if (!confirm("Are you sure you want to delete ALL redeemed credit coupons? This cannot be undone.")) return;
+    setIsDeletingUsed(true);
+    try {
+      const { error } = await supabase
+        .from("credit_coupons")
+        .delete()
+        .eq("is_redeemed", true);
+      if (error) throw error;
+
+      // Also delete all coupon uses
+      const { error: usesError } = await supabase
+        .from("coupon_uses")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000"); // delete all
+
+      toast({ title: "Success", description: "All redeemed coupons and coupon uses have been removed" });
+      fetchCoupons();
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete redeemed coupons", variant: "destructive" });
+    } finally {
+      setIsDeletingUsed(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -99,7 +125,19 @@ const CreditCouponsManager = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-orbitron font-bold">Credit Coupons</h2>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h2 className="text-xl font-orbitron font-bold">Credit Coupons</h2>
+        {coupons.some(c => c.is_redeemed) && (
+          <button
+            onClick={deleteAllRedeemed}
+            disabled={isDeletingUsed}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50 text-sm"
+          >
+            {isDeletingUsed ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+            Delete All Redeemed
+          </button>
+        )}
+      </div>
 
       {/* Generate Form */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="game-card p-6">
