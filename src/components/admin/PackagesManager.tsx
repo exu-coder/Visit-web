@@ -299,6 +299,33 @@ const PackagesManager = () => {
               rows={3}
             />
           </div>
+          {/* Category Selection */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Category *</Label>
+              <select
+                value={formData.category || "visit"}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value, sub_category: e.target.value === "tcp" ? "guild" : null })}
+                className="w-full mt-1 rounded-md border border-border bg-card px-3 py-2 text-sm"
+              >
+                <option value="visit">Visit</option>
+                <option value="tcp">TCP</option>
+              </select>
+            </div>
+            {formData.category === "tcp" && (
+              <div>
+                <Label>Sub Category *</Label>
+                <select
+                  value={formData.sub_category || "guild"}
+                  onChange={(e) => setFormData({ ...formData, sub_category: e.target.value })}
+                  className="w-full mt-1 rounded-md border border-border bg-card px-3 py-2 text-sm"
+                >
+                  <option value="guild">Guild</option>
+                  <option value="friend">Friend</option>
+                </select>
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <Switch
               checked={formData.is_active ?? true}
