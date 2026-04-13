@@ -1,0 +1,326 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* EXU GUILD TCP BOT Design System
+   Theme: Dark Gamer Aesthetic
+   Colors: Black base, Neon Red & Silver accents
+   Fonts: Orbitron (headings) + Poppins (body)
+*/
+
+@layer base {
+  :root {
+    /* Core dark theme */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 95%;
+
+    /* Card surfaces */
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 95%;
+
+    /* Popover */
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 95%;
+
+    /* Primary: Neon Red */
+    --primary: 350 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 350 100% 60%;
+
+    /* Secondary: Silver/Metallic */
+    --secondary: 220 10% 20%;
+    --secondary-foreground: 220 10% 85%;
+
+    /* Muted tones */
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
+
+    /* Accent: Bright red */
+    --accent: 350 100% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & inputs */
+    --border: 0 0% 18%;
+    --input: 0 0% 15%;
+    --ring: 350 100% 50%;
+
+    --radius: 0.75rem;
+
+    /* Glow effects */
+    --glow-red: 0 100% 50%;
+    --glow-silver: 220 20% 70%;
+
+    /* Gradients */
+    --gradient-dark: linear-gradient(180deg, hsl(0 0% 6%) 0%, hsl(0 0% 2%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%);
+    --gradient-red: linear-gradient(135deg, hsl(350 100% 50%) 0%, hsl(350 100% 35%) 100%);
+    --gradient-hero: radial-gradient(ellipse at center, hsl(350 100% 15% / 0.3) 0%, transparent 70%);
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 0 0% 85%;
+    --sidebar-primary: 350 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 350 100% 50%;
+
+    /* Success/Warning */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 10%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-poppins antialiased;
+    background-image: var(--gradient-dark);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-orbitron font-bold tracking-wider;
+  }
+}
+
+@layer components {
+  /* Glow effects */
+  .glow-red {
+    box-shadow: 
+      0 0 20px hsl(350 100% 50% / 0.4),
+      0 0 40px hsl(350 100% 50% / 0.2),
+      inset 0 0 20px hsl(350 100% 50% / 0.1);
+  }
+
+  .glow-red-soft {
+    box-shadow: 0 0 30px hsl(350 100% 50% / 0.3);
+  }
+
+  .glow-red-border {
+    box-shadow: 
+      0 0 0 1px hsl(350 100% 50% / 0.5),
+      0 0 15px hsl(350 100% 50% / 0.3);
+  }
+
+  .glow-text {
+    text-shadow: 
+      0 0 10px hsl(350 100% 50% / 0.8),
+      0 0 20px hsl(350 100% 50% / 0.5),
+      0 0 40px hsl(350 100% 50% / 0.3);
+  }
+
+  /* Card styles */
+  .game-card {
+    @apply relative overflow-hidden rounded-xl;
+    background: var(--gradient-card);
+    border: 1px solid hsl(350 100% 50% / 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .game-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: hsl(350 100% 50% / 0.6);
+    box-shadow: 
+      0 0 30px hsl(350 100% 50% / 0.3),
+      0 20px 40px hsl(0 0% 0% / 0.4);
+  }
+
+  /* Neon button */
+  .neon-btn {
+    @apply relative px-6 py-3 font-orbitron font-semibold uppercase tracking-widest;
+    background: transparent;
+    border: 2px solid hsl(350 100% 50%);
+    color: hsl(350 100% 55%);
+    transition: all 0.3s ease;
+  }
+
+  .neon-btn:hover {
+    background: hsl(350 100% 50%);
+    color: white;
+    box-shadow: 
+      0 0 20px hsl(350 100% 50% / 0.6),
+      inset 0 0 20px hsl(350 100% 60% / 0.2);
+  }
+
+  .neon-btn-solid {
+    @apply relative px-6 py-3 font-orbitron font-semibold uppercase tracking-widest;
+    background: var(--gradient-red);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+  }
+
+  .neon-btn-solid:hover {
+    box-shadow: 
+      0 0 30px hsl(350 100% 50% / 0.5),
+      0 10px 30px hsl(350 100% 50% / 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* Badge styles */
+  .badge-glow {
+    @apply px-3 py-1 text-xs font-orbitron font-bold uppercase rounded-full;
+    background: hsl(350 100% 50%);
+    color: white;
+    box-shadow: 0 0 15px hsl(350 100% 50% / 0.5);
+  }
+
+  /* Grid animation background */
+  .grid-bg {
+    background-image: 
+      linear-gradient(hsl(350 100% 50% / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(350 100% 50% / 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  /* Contact button styles */
+  .contact-btn {
+    @apply flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-poppins font-semibold;
+    border: 1px solid hsl(350 100% 50% / 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .contact-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px hsl(0 0% 0% / 0.3);
+  }
+
+  .contact-btn.tg-channel {
+    @apply bg-gradient-to-r from-blue-600 to-blue-500 text-white;
+    border-color: hsl(210 100% 50% / 0.5);
+  }
+
+  .contact-btn.tg-channel:hover {
+    box-shadow: 0 0 30px hsl(210 100% 50% / 0.4);
+  }
+
+  .contact-btn.tg-admin {
+    @apply bg-gradient-to-r from-purple-600 to-purple-500 text-white;
+    border-color: hsl(270 100% 50% / 0.5);
+  }
+
+  .contact-btn.tg-admin:hover {
+    box-shadow: 0 0 30px hsl(270 100% 50% / 0.4);
+  }
+
+  .contact-btn.wa {
+    @apply bg-gradient-to-r from-green-600 to-green-500 text-white;
+    border-color: hsl(142 70% 45% / 0.5);
+  }
+
+  .contact-btn.wa:hover {
+    box-shadow: 0 0 30px hsl(142 70% 45% / 0.4);
+  }
+
+  .contact-btn.youtube {
+    @apply bg-gradient-to-r from-red-600 to-red-500 text-white;
+    border-color: hsl(0 100% 50% / 0.5);
+  }
+
+  .contact-btn.youtube:hover {
+    box-shadow: 0 0 30px hsl(0 100% 50% / 0.4);
+  }
+
+  /* Section title */
+  .section-title {
+    @apply text-2xl md:text-3xl font-orbitron font-bold text-center mb-8;
+    background: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(350 100% 60%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Bottom nav */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50;
+    background: linear-gradient(180deg, hsl(0 0% 4% / 0.95) 0%, hsl(0 0% 2%) 100%);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid hsl(350 100% 50% / 0.2);
+  }
+
+  .nav-item {
+    @apply flex flex-col items-center gap-1 py-2 px-4 transition-all duration-300;
+    color: hsl(0 0% 50%);
+  }
+
+  .nav-item.active {
+    color: hsl(350 100% 55%);
+  }
+
+  .nav-item.active .nav-icon {
+    filter: drop-shadow(0 0 8px hsl(350 100% 50% / 0.6));
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(0 0% 8%);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(350 100% 50% / 0.5);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(350 100% 50% / 0.7);
+  }
+}
+
+/* Keyframe animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px hsl(350 100% 50% / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px hsl(350 100% 50% / 0.6);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes grid-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 50px 50px;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-grid {
+  animation: grid-move 20s linear infinite;
+}
