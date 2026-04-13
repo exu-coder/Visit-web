@@ -9,6 +9,8 @@ export interface Package {
   is_active: boolean;
   display_order: number;
   regional_prices: Record<string, number | null> | null;
+  category: string;
+  sub_category: string | null;
   created_at: string;
   updated_at: string;
 }
