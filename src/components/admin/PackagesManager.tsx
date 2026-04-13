@@ -518,7 +518,12 @@ const PackagesManager = () => {
                       />
                     )}
                     <div>
-                      <h3 className="font-semibold">{pkg.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{pkg.name}</h3>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary">
+                          {pkg.category === "tcp" ? `TCP / ${pkg.sub_category || "guild"}` : "Visit"}
+                        </span>
+                      </div>
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-primary font-orbitron font-bold">
                           ৳{pkg.price}
