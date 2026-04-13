@@ -226,6 +226,7 @@ export type Database = {
       }
       packages: {
         Row: {
+          category: string
           created_at: string
           description: string | null
           display_order: number
@@ -237,9 +238,11 @@ export type Database = {
           original_price: number | null
           price: number
           regional_prices: Json | null
+          sub_category: string | null
           updated_at: string
         }
         Insert: {
+          category?: string
           created_at?: string
           description?: string | null
           display_order?: number
@@ -251,9 +254,11 @@ export type Database = {
           original_price?: number | null
           price: number
           regional_prices?: Json | null
+          sub_category?: string | null
           updated_at?: string
         }
         Update: {
+          category?: string
           created_at?: string
           description?: string | null
           display_order?: number
@@ -265,6 +270,7 @@ export type Database = {
           original_price?: number | null
           price?: number
           regional_prices?: Json | null
+          sub_category?: string | null
           updated_at?: string
         }
         Relationships: []
