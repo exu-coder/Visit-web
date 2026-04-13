@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import ProductCard from "./ProductCard";
 import { usePackages } from "@/hooks/usePackages";
 import type { Package } from "@/types/package";
-import { Loader2, Eye, Wifi } from "lucide-react";
+import { Loader2, Eye, Wifi, Shield, Users, ChevronRight } from "lucide-react";
 
 interface PackagesSectionProps {
   onSelectProduct: (pkg: Package, region: string) => void;
@@ -43,119 +43,241 @@ const PackagesSection = ({ onSelectProduct }: PackagesSectionProps) => {
 
   return (
     <section className="px-4 py-8 pb-28">
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-6"
+        className="text-center mb-8"
       >
-        <h2 className="section-title">PACKAGES</h2>
+        <h2 className="section-title">SELECT SERVICE</h2>
         <p className="text-muted-foreground font-poppins text-sm">
-          Select your package and dominate the arena
+          Choose your service type and server region
         </p>
       </motion.div>
 
-      {/* Category Tabs: Visit / TCP */}
-      <div className="flex gap-2 justify-center mb-4 max-w-md mx-auto">
-        <button
-          onClick={() => setActiveCategory("visit")}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-orbitron font-bold text-sm transition-all ${
-            activeCategory === "visit"
-              ? "bg-primary text-primary-foreground shadow-lg"
-              : "bg-card border border-border text-muted-foreground hover:border-primary"
-          }`}
-        >
-          <Eye size={18} />
-          Visit
-        </button>
-        <button
-          onClick={() => setActiveCategory("tcp")}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-orbitron font-bold text-sm transition-all ${
-            activeCategory === "tcp"
-              ? "bg-primary text-primary-foreground shadow-lg"
-              : "bg-card border border-border text-muted-foreground hover:border-primary"
-          }`}
-        >
-          <Wifi size={18} />
-          TCP
-        </button>
-      </div>
+      {/* Service Type Selector */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="max-w-md mx-auto mb-5"
+      >
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 px-1">Service Type</p>
+        <div className="relative flex rounded-xl bg-card border border-border p-1 gap-1">
+          {/* Sliding indicator */}
+          <motion.div
+            className="absolute top-1 bottom-1 rounded-lg bg-primary/15 border border-primary/30"
+            initial={false}
+            animate={{
+              left: activeCategory === "visit" ? "4px" : "50%",
+              width: "calc(50% - 6px)",
+            }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          />
+          <button
+            onClick={() => setActiveCategory("visit")}
+            className={`relative z-10 flex-1 flex items-center justify-center gap-2.5 py-3 rounded-lg font-orbitron font-bold text-sm transition-colors ${
+              activeCategory === "visit"
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Eye size={16} />
+            VISIT
+          </button>
+          <button
+            onClick={() => setActiveCategory("tcp")}
+            className={`relative z-10 flex-1 flex items-center justify-center gap-2.5 py-3 rounded-lg font-orbitron font-bold text-sm transition-colors ${
+              activeCategory === "tcp"
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Wifi size={16} />
+            TCP
+          </button>
+        </div>
+      </motion.div>
 
-      {/* Visit Region Tabs */}
-      {activeCategory === "visit" && (
-        <motion.div
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex gap-2 justify-center mb-6 max-w-sm mx-auto"
-        >
-          <button
-            onClick={() => setVisitRegion("Bangladesh")}
-            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-              visitRegion === "Bangladesh"
-                ? "bg-primary/20 text-primary border border-primary/40"
-                : "bg-card border border-border text-muted-foreground hover:border-primary/50"
-            }`}
+      {/* Sub-selector: Region for Visit / Type for TCP */}
+      <AnimatePresence mode="wait">
+        {activeCategory === "visit" ? (
+          <motion.div
+            key="visit-region"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="max-w-sm mx-auto mb-8"
           >
-            🇧🇩 Bangladesh
-          </button>
-          <button
-            onClick={() => setVisitRegion("India")}
-            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-              visitRegion === "India"
-                ? "bg-primary/20 text-primary border border-primary/40"
-                : "bg-card border border-border text-muted-foreground hover:border-primary/50"
-            }`}
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 px-1">Server Region</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setVisitRegion("Bangladesh")}
+                className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
+                  visitRegion === "Bangladesh"
+                    ? "bg-primary/10 border-primary/40 shadow-[0_0_12px_hsl(var(--primary)/0.15)]"
+                    : "bg-card border-border hover:border-primary/30"
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
+                  visitRegion === "Bangladesh" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                }`}>
+                  BD
+                </div>
+                <div className="text-left">
+                  <p className={`text-sm font-semibold ${visitRegion === "Bangladesh" ? "text-primary" : "text-foreground"}`}>Bangladesh</p>
+                  <p className="text-[10px] text-muted-foreground">South Asia</p>
+                </div>
+                {visitRegion === "Bangladesh" && (
+                  <motion.div
+                    layoutId="region-check"
+                    className="absolute right-3 w-2 h-2 rounded-full bg-primary"
+                  />
+                )}
+              </button>
+              <button
+                onClick={() => setVisitRegion("India")}
+                className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
+                  visitRegion === "India"
+                    ? "bg-primary/10 border-primary/40 shadow-[0_0_12px_hsl(var(--primary)/0.15)]"
+                    : "bg-card border-border hover:border-primary/30"
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
+                  visitRegion === "India" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                }`}>
+                  IN
+                </div>
+                <div className="text-left">
+                  <p className={`text-sm font-semibold ${visitRegion === "India" ? "text-primary" : "text-foreground"}`}>India</p>
+                  <p className="text-[10px] text-muted-foreground">South Asia</p>
+                </div>
+                {visitRegion === "India" && (
+                  <motion.div
+                    layoutId="region-check"
+                    className="absolute right-3 w-2 h-2 rounded-full bg-primary"
+                  />
+                )}
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="tcp-type"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="max-w-sm mx-auto mb-8"
           >
-            🇮🇳 India
-          </button>
-        </motion.div>
-      )}
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 px-1">Connection Type</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setTcpSubTab("guild")}
+                className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
+                  tcpSubTab === "guild"
+                    ? "bg-primary/10 border-primary/40 shadow-[0_0_12px_hsl(var(--primary)/0.15)]"
+                    : "bg-card border-border hover:border-primary/30"
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  tcpSubTab === "guild" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                }`}>
+                  <Shield size={16} />
+                </div>
+                <div className="text-left">
+                  <p className={`text-sm font-semibold ${tcpSubTab === "guild" ? "text-primary" : "text-foreground"}`}>Guild</p>
+                  <p className="text-[10px] text-muted-foreground">Guild UID</p>
+                </div>
+                {tcpSubTab === "guild" && (
+                  <motion.div
+                    layoutId="tcp-check"
+                    className="absolute right-3 w-2 h-2 rounded-full bg-primary"
+                  />
+                )}
+              </button>
+              <button
+                onClick={() => setTcpSubTab("friend")}
+                className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
+                  tcpSubTab === "friend"
+                    ? "bg-primary/10 border-primary/40 shadow-[0_0_12px_hsl(var(--primary)/0.15)]"
+                    : "bg-card border-border hover:border-primary/30"
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  tcpSubTab === "friend" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                }`}>
+                  <Users size={16} />
+                </div>
+                <div className="text-left">
+                  <p className={`text-sm font-semibold ${tcpSubTab === "friend" ? "text-primary" : "text-foreground"}`}>Friend</p>
+                  <p className="text-[10px] text-muted-foreground">Player UID</p>
+                </div>
+                {tcpSubTab === "friend" && (
+                  <motion.div
+                    layoutId="tcp-check"
+                    className="absolute right-3 w-2 h-2 rounded-full bg-primary"
+                  />
+                )}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* TCP Sub-tabs: Guild / Friend */}
-      {activeCategory === "tcp" && (
-        <motion.div
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex gap-2 justify-center mb-6 max-w-sm mx-auto"
-        >
-          <button
-            onClick={() => setTcpSubTab("guild")}
-            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-              tcpSubTab === "guild"
-                ? "bg-primary/20 text-primary border border-primary/40"
-                : "bg-card border border-border text-muted-foreground hover:border-primary/50"
-            }`}
-          >
-            🏰 Guild
-          </button>
-          <button
-            onClick={() => setTcpSubTab("friend")}
-            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-              tcpSubTab === "friend"
-                ? "bg-primary/20 text-primary border border-primary/40"
-                : "bg-card border border-border text-muted-foreground hover:border-primary/50"
-            }`}
-          >
-            👤 Friend
-          </button>
-        </motion.div>
-      )}
+      {/* Active Selection Indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="max-w-5xl mx-auto mb-4"
+      >
+        <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+          <span className="font-medium text-foreground">{activeCategory === "visit" ? "Visit" : "TCP"}</span>
+          <ChevronRight size={12} />
+          <span className="font-medium text-primary">
+            {activeCategory === "visit"
+              ? visitRegion
+              : tcpSubTab === "guild" ? "Guild" : "Friend"
+            }
+          </span>
+          <span className="ml-auto">{currentPackages.length} package{currentPackages.length !== 1 ? "s" : ""}</span>
+        </div>
+      </motion.div>
 
       {/* Packages Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
-        {currentPackages.map((pkg, index) => (
-          <ProductCard
-            key={pkg.id}
-            pkg={pkg}
-            onSelect={() => onSelectProduct(pkg, activeCategory === "visit" ? visitRegion : "Bangladesh")}
-            index={index}
-          />
-        ))}
-      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`${activeCategory}-${activeCategory === "visit" ? visitRegion : tcpSubTab}`}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.25 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto"
+        >
+          {currentPackages.map((pkg, index) => (
+            <ProductCard
+              key={pkg.id}
+              pkg={pkg}
+              onSelect={() => onSelectProduct(pkg, activeCategory === "visit" ? visitRegion : "Bangladesh")}
+              index={index}
+            />
+          ))}
+        </motion.div>
+      </AnimatePresence>
 
       {currentPackages.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No packages available in this category.</p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-16"
+        >
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted/50 flex items-center justify-center">
+            {activeCategory === "visit" ? <Eye size={28} className="text-muted-foreground" /> : <Wifi size={28} className="text-muted-foreground" />}
+          </div>
+          <p className="text-muted-foreground font-medium">No packages available</p>
+          <p className="text-xs text-muted-foreground mt-1">Check back later for new offerings</p>
+        </motion.div>
       )}
     </section>
   );
