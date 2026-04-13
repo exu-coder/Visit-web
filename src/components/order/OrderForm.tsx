@@ -22,6 +22,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
+    uid: "",
     guildUid: "",
     telegramUsername: "",
     whatsappNumber: "",
@@ -57,6 +58,10 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
   const price = pkg.price;
   const hasEnoughCredits = creditBalance >= price;
 
+  const isVisit = pkg.category === "visit";
+  const isTcpGuild = pkg.category === "tcp" && pkg.sub_category === "guild";
+  const isTcpFriend = pkg.category === "tcp" && pkg.sub_category === "friend";
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -66,7 +71,20 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
 
     if (!user) { onAuthRequired(); return; }
 
-    if (!formData.guildUid || !formData.telegramUsername || !formData.whatsappNumber) {
+    // Validate based on category
+    if (isVisit && !formData.uid) {
+      toast({ title: "Missing Information", description: "Please enter your UID", variant: "destructive" });
+      return;
+    }
+    if (isTcpGuild && !formData.guildUid) {
+      toast({ title: "Missing Information", description: "Please enter your Guild UID", variant: "destructive" });
+      return;
+    }
+    if (isTcpFriend && !formData.uid) {
+      toast({ title: "Missing Information", description: "Please enter your UID", variant: "destructive" });
+      return;
+    }
+    if (!formData.telegramUsername || !formData.whatsappNumber) {
       toast({ title: "Missing Information", description: "Please fill in all required fields", variant: "destructive" });
       return;
     }
@@ -85,6 +103,8 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
         .eq("user_id", user.id);
       if (creditError) throw new Error("Failed to deduct credits");
 
+      const guildUidValue = isTcpGuild ? formData.guildUid : (isVisit || isTcpFriend ? formData.uid : formData.guildUid);
+
       const { error: orderError } = await supabase
         .from("orders")
         .insert({
@@ -94,8 +114,8 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
           price: `${price} Credits`,
           price_value: price,
           trx_id: `CR-${Date.now()}`,
-          guild_uid: formData.guildUid,
-          region: "Bangladesh",
+          guild_uid: guildUidValue,
+          region: selectedRegion,
           telegram_username: formData.telegramUsername,
           whatsapp_number: formData.whatsappNumber,
           payment_method: "credits",
@@ -108,7 +128,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
       }
 
       await supabase.from("profiles").update({
-        guild_uid: formData.guildUid,
+        guild_uid: formData.guildUid || formData.uid,
         telegram_username: formData.telegramUsername,
         whatsapp_number: formData.whatsappNumber,
       }).eq("user_id", user.id);
@@ -121,6 +141,13 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const getCategoryLabel = () => {
+    if (isVisit) return `Visit • ${selectedRegion}`;
+    if (isTcpGuild) return "TCP • Guild";
+    if (isTcpFriend) return "TCP • Friend";
+    return pkg.name;
   };
 
   return (
@@ -136,7 +163,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
         </button>
         <div>
           <h2 className="font-orbitron font-bold text-xl">Complete Order</h2>
-          <p className="text-sm text-muted-foreground">{pkg.name}</p>
+          <p className="text-sm text-muted-foreground">{pkg.name} — {getCategoryLabel()}</p>
         </div>
       </div>
 
@@ -155,7 +182,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
         <div className="flex justify-between items-center">
           <div>
             <h3 className="font-orbitron font-bold">{pkg.name}</h3>
-            <p className="text-sm text-muted-foreground">{pkg.features?.[0]}</p>
+            <p className="text-sm text-muted-foreground">{getCategoryLabel()}</p>
           </div>
           <div className="text-right">
             <div className="text-2xl font-orbitron font-black text-primary flex items-center gap-1">
@@ -189,10 +216,30 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-4">
-          <div>
-            <Label htmlFor="guildUid" className="font-poppins">Guild UID *</Label>
-            <Input id="guildUid" placeholder="Enter your Guild UID" value={formData.guildUid} onChange={(e) => handleInputChange("guildUid", e.target.value)} className="mt-1 bg-card border-border focus:border-primary" />
-          </div>
+          {/* Visit: UID field */}
+          {isVisit && (
+            <div>
+              <Label htmlFor="uid" className="font-poppins">Your UID *</Label>
+              <Input id="uid" placeholder="Enter your UID" value={formData.uid} onChange={(e) => handleInputChange("uid", e.target.value)} className="mt-1 bg-card border-border focus:border-primary" />
+            </div>
+          )}
+
+          {/* TCP Guild: Guild UID field */}
+          {isTcpGuild && (
+            <div>
+              <Label htmlFor="guildUid" className="font-poppins">Guild UID *</Label>
+              <Input id="guildUid" placeholder="Enter your Guild UID" value={formData.guildUid} onChange={(e) => handleInputChange("guildUid", e.target.value)} className="mt-1 bg-card border-border focus:border-primary" />
+            </div>
+          )}
+
+          {/* TCP Friend: UID field */}
+          {isTcpFriend && (
+            <div>
+              <Label htmlFor="uid" className="font-poppins">Your UID *</Label>
+              <Input id="uid" placeholder="Enter your UID" value={formData.uid} onChange={(e) => handleInputChange("uid", e.target.value)} className="mt-1 bg-card border-border focus:border-primary" />
+            </div>
+          )}
+
           <div>
             <Label htmlFor="telegram" className="font-poppins">Telegram Username *</Label>
             <Input id="telegram" placeholder="@yourusername" value={formData.telegramUsername} onChange={(e) => handleInputChange("telegramUsername", e.target.value)} className="mt-1 bg-card border-border focus:border-primary" />
