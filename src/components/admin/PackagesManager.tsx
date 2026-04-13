@@ -27,6 +27,8 @@ interface PackageData {
   features: string[] | null;
   is_active: boolean;
   display_order: number;
+  category: string;
+  sub_category: string | null;
 }
 
 const PackagesManager = () => {
@@ -83,6 +85,8 @@ const PackagesManager = () => {
         features: formData.features || [],
         is_active: formData.is_active ?? true,
         display_order: packages.length,
+        category: formData.category || "visit",
+        sub_category: formData.category === "tcp" ? (formData.sub_category || "guild") : null,
       });
 
       if (error) throw error;
@@ -113,6 +117,8 @@ const PackagesManager = () => {
           image_url: formData.image_url,
           features: formData.features,
           is_active: formData.is_active,
+          category: formData.category || "visit",
+          sub_category: formData.category === "tcp" ? (formData.sub_category || "guild") : null,
         })
         .eq("id", id);
 
@@ -183,6 +189,8 @@ const PackagesManager = () => {
       image_url: "",
       features: [],
       is_active: true,
+      category: "visit",
+      sub_category: null,
     });
   };
 
