@@ -66,11 +66,12 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const isFreePackage = price === 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!user) { onAuthRequired(); return; }
-
     // Validate based on category
     if (isVisit && !formData.uid) {
       toast({ title: "Missing Information", description: "Please enter your UID", variant: "destructive" });
