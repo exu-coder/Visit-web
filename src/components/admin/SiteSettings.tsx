@@ -187,11 +187,78 @@ const SiteSettings = () => {
         </div>
       </motion.div>
 
-      {/* Preview */}
+      {/* Visit API Configuration */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
+        className="game-card p-6 space-y-6"
+      >
+        <div className="flex items-center gap-3 pb-4 border-b border-border">
+          <Globe size={24} className="text-primary" />
+          <div>
+            <h3 className="font-semibold">Visit API Configuration</h3>
+            <p className="text-sm text-muted-foreground">
+              Configure the visit API endpoints for normal and VIP access
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-6">
+          <div>
+            <Label className="flex items-center gap-2">
+              <Zap size={14} className="text-primary" /> Normal API Endpoint
+            </Label>
+            <Input
+              value={settings.visit_api_normal || ""}
+              onChange={(e) => updateSetting("visit_api_normal", e.target.value)}
+              placeholder="https://visit-53-48kz.onrender.com"
+              className="mt-2 font-mono text-xs"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Base URL for the standard visit API. Format: baseurl/server/uid
+            </p>
+          </div>
+
+          <div>
+            <Label className="flex items-center gap-2">
+              <Zap size={14} className="text-amber-400" /> VIP API Endpoint
+            </Label>
+            <Input
+              value={settings.visit_api_vip || ""}
+              onChange={(e) => updateSetting("visit_api_vip", e.target.value)}
+              placeholder="https://your-vip-api.com"
+              className="mt-2 font-mono text-xs"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Premium API endpoint for VIP packages (leave empty to use normal API)
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg bg-background border border-border">
+            <div>
+              <p className="font-medium text-sm">API Enabled</p>
+              <p className="text-xs text-muted-foreground">Enable or disable the visit API service</p>
+            </div>
+            <button
+              onClick={() => updateSetting("visit_api_enabled", settings.visit_api_enabled === "true" ? "false" : "true")}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                settings.visit_api_enabled === "true"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "bg-destructive/20 text-destructive border border-destructive/30"
+              }`}
+            >
+              {settings.visit_api_enabled === "true" ? "Enabled" : "Disabled"}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Preview */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
         className="game-card p-6"
       >
         <h3 className="font-semibold mb-4">Preview</h3>
