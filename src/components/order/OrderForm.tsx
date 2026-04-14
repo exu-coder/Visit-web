@@ -199,7 +199,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
         </div>
       </div>
 
-      {user && (
+      {user && !isFreePackage && (
         <div className={`game-card p-4 mb-6 ${hasEnoughCredits ? 'border-success/30 bg-success/5' : 'border-destructive/30 bg-destructive/5'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -265,7 +265,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
           {isSubmitting ? (
             <><Loader2 size={20} className="animate-spin" /> Processing...</>
           ) : (
-            <><Coins size={20} /> Pay {price} Credits & Submit</>
+            <>{isFreePackage ? <Eye size={20} /> : <Coins size={20} />} {isFreePackage ? "Submit Free Order" : `Pay ${price} Credits & Submit`}</>
           )}
         </motion.button>
       </form>
