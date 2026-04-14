@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Coins, Loader2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Coins, Loader2, AlertTriangle, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -66,11 +66,12 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const isFreePackage = price === 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!user) { onAuthRequired(); return; }
-
     // Validate based on category
     if (isVisit && !formData.uid) {
       toast({ title: "Missing Information", description: "Please enter your UID", variant: "destructive" });
@@ -89,7 +90,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
       return;
     }
 
-    if (!hasEnoughCredits) {
+    if (!isFreePackage && !hasEnoughCredits) {
       toast({ title: "Insufficient Credits", description: `You need ${price} credits but only have ${creditBalance}.`, variant: "destructive" });
       return;
     }
@@ -97,11 +98,13 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
     setIsSubmitting(true);
 
     try {
-      const { error: creditError } = await supabase
-        .from("profiles")
-        .update({ credit_balance: creditBalance - price })
-        .eq("user_id", user.id);
-      if (creditError) throw new Error("Failed to deduct credits");
+      if (!isFreePackage) {
+        const { error: creditError } = await supabase
+          .from("profiles")
+          .update({ credit_balance: creditBalance - price })
+          .eq("user_id", user.id);
+        if (creditError) throw new Error("Failed to deduct credits");
+      }
 
       const guildUidValue = isTcpGuild ? formData.guildUid : (isVisit || isTcpFriend ? formData.uid : formData.guildUid);
 
@@ -111,7 +114,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
           user_id: user.id,
           product_id: pkg.id,
           product_name: pkg.name,
-          price: `${price} Credits`,
+          price: isFreePackage ? "FREE" : `${price} Credits`,
           price_value: price,
           trx_id: `CR-${Date.now()}`,
           guild_uid: guildUidValue,
@@ -123,7 +126,9 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
         });
 
       if (orderError) {
-        await supabase.from("profiles").update({ credit_balance: creditBalance }).eq("user_id", user.id);
+        if (!isFreePackage) {
+          await supabase.from("profiles").update({ credit_balance: creditBalance }).eq("user_id", user.id);
+        }
         throw new Error("Failed to create order");
       }
 
@@ -133,7 +138,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
         whatsapp_number: formData.whatsappNumber,
       }).eq("user_id", user.id);
 
-      toast({ title: "Order Submitted! 🎉", description: `${price} credits deducted. Check your profile for updates.` });
+      toast({ title: "Order Submitted!", description: isFreePackage ? "Your free order has been placed." : `${price} credits deducted. Check your profile for updates.` });
       onSubmit();
     } catch (error) {
       console.error("Order submission error:", error);
@@ -194,7 +199,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
         </div>
       </div>
 
-      {user && (
+      {user && !isFreePackage && (
         <div className={`game-card p-4 mb-6 ${hasEnoughCredits ? 'border-success/30 bg-success/5' : 'border-destructive/30 bg-destructive/5'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -252,7 +257,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
 
         <motion.button
           type="submit"
-          disabled={isSubmitting || !hasEnoughCredits || !user}
+          disabled={isSubmitting || (!isFreePackage && !hasEnoughCredits) || !user}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="w-full neon-btn-solid rounded-xl py-4 text-lg font-bold flex items-center justify-center gap-2 disabled:opacity-50"
@@ -260,7 +265,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
           {isSubmitting ? (
             <><Loader2 size={20} className="animate-spin" /> Processing...</>
           ) : (
-            <><Coins size={20} /> Pay {price} Credits & Submit</>
+            <>{isFreePackage ? <Eye size={20} /> : <Coins size={20} />} {isFreePackage ? "Submit Free Order" : `Pay ${price} Credits & Submit`}</>
           )}
         </motion.button>
       </form>
