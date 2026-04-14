@@ -15,13 +15,18 @@ interface FreeVisitFormProps {
   onAuthRequired: () => void;
 }
 
+const SERVERS = [
+  { code: "bd", label: "Bangladesh", short: "BD", desc: "South Asia" },
+  { code: "ind", label: "India", short: "IN", desc: "South Asia" },
+];
+
 const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: FreeVisitFormProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [uid, setUid] = useState("");
+  const [server, setServer] = useState(selectedRegion === "India" ? "ind" : "bd");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Check if user already used free trial
   const { data: trialUsed, isLoading: trialLoading } = useQuery({
     queryKey: ["free-trial", user?.id],
     queryFn: async () => {
@@ -35,8 +40,6 @@ const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: Fre
     },
     enabled: !!user,
   });
-
-  const serverCode = selectedRegion === "India" ? "ind" : "bd";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +58,7 @@ const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: Fre
     setIsSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke("visit-api", {
-        body: { server: serverCode, uid: uid.trim() },
+        body: { server, uid: uid.trim() },
       });
 
       if (error) throw new Error(error.message || "API call failed");
@@ -81,7 +84,6 @@ const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: Fre
       exit={{ opacity: 0, x: -20 }}
       className="px-4 py-6 pb-28 max-w-lg mx-auto"
     >
-      {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <button onClick={onBack} className="p-2 rounded-lg bg-card border border-border hover:border-primary transition-colors">
           <ArrowLeft size={20} />
@@ -92,7 +94,6 @@ const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: Fre
         </div>
       </div>
 
-      {/* Trial Badge */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -127,14 +128,40 @@ const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: Fre
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Server Display */}
-        <div className="game-card p-4">
-          <div className="flex items-center gap-3">
-            <Globe size={18} className="text-primary" />
-            <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Server</p>
-              <p className="font-orbitron font-bold text-primary">{selectedRegion} ({serverCode.toUpperCase()})</p>
-            </div>
+        {/* Server Selection */}
+        <div>
+          <Label className="font-poppins flex items-center gap-2 mb-2">
+            <Globe size={14} /> Select Server *
+          </Label>
+          <div className="grid grid-cols-2 gap-2">
+            {SERVERS.map((s) => (
+              <button
+                key={s.code}
+                type="button"
+                onClick={() => setServer(s.code)}
+                className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
+                  server === s.code
+                    ? "bg-primary/10 border-primary/40 shadow-[0_0_12px_hsl(var(--primary)/0.15)]"
+                    : "bg-card border-border hover:border-primary/30"
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
+                  server === s.code ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                }`}>
+                  {s.short}
+                </div>
+                <div className="text-left">
+                  <p className={`text-sm font-semibold ${server === s.code ? "text-primary" : "text-foreground"}`}>{s.label}</p>
+                  <p className="text-[10px] text-muted-foreground">{s.desc}</p>
+                </div>
+                {server === s.code && (
+                  <motion.div
+                    layoutId="free-server-check"
+                    className="absolute right-3 w-2 h-2 rounded-full bg-primary"
+                  />
+                )}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -161,7 +188,10 @@ const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: Fre
           className="w-full rounded-xl py-4 text-lg font-bold flex items-center justify-center gap-2 disabled:opacity-50 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.2)]"
         >
           {isSubmitting ? (
-            <><Loader2 size={20} className="animate-spin" /> Processing Visit...</>
+            <>
+              <Loader2 size={20} className="animate-spin" />
+              <span className="animate-pulse">Executing Visit...</span>
+            </>
           ) : (
             <><Eye size={20} /> Execute Free Visit</>
           )}

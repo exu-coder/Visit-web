@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Coins, Loader2, AlertTriangle, Eye } from "lucide-react";
+import { ArrowLeft, Coins, Loader2, AlertTriangle, Eye, Globe, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -17,10 +17,16 @@ interface OrderFormProps {
   onAuthRequired: () => void;
 }
 
+const SERVERS = [
+  { code: "bd", label: "Bangladesh", short: "BD", desc: "South Asia" },
+  { code: "ind", label: "India", short: "IN", desc: "South Asia" },
+];
+
 const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: OrderFormProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [server, setServer] = useState(selectedRegion === "India" ? "ind" : "bd");
   const [formData, setFormData] = useState({
     uid: "",
     guildUid: "",
@@ -61,18 +67,18 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
   const isVisit = pkg.category === "visit";
   const isTcpGuild = pkg.category === "tcp" && pkg.sub_category === "guild";
   const isTcpFriend = pkg.category === "tcp" && pkg.sub_category === "friend";
+  const isFreePackage = price === 0;
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const isFreePackage = price === 0;
+  const regionLabel = server === "ind" ? "India" : "Bangladesh";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!user) { onAuthRequired(); return; }
-    // Validate based on category
     if (isVisit && !formData.uid) {
       toast({ title: "Missing Information", description: "Please enter your UID", variant: "destructive" });
       return;
@@ -118,11 +124,11 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
           price_value: price,
           trx_id: `CR-${Date.now()}`,
           guild_uid: guildUidValue,
-          region: selectedRegion,
+          region: regionLabel,
           telegram_username: formData.telegramUsername,
           whatsapp_number: formData.whatsappNumber,
           payment_method: "credits",
-          status: "pending",
+          status: isFreePackage ? "approved" : "pending",
         });
 
       if (orderError) {
@@ -138,7 +144,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
         whatsapp_number: formData.whatsappNumber,
       }).eq("user_id", user.id);
 
-      toast({ title: "Order Submitted!", description: isFreePackage ? "Your free order has been placed." : `${price} credits deducted. Check your profile for updates.` });
+      toast({ title: isFreePackage ? "Order Auto-Approved!" : "Order Submitted!", description: isFreePackage ? "Your free order has been approved automatically." : `${price} credits deducted. Check your profile for updates.` });
       onSubmit();
     } catch (error) {
       console.error("Order submission error:", error);
@@ -149,9 +155,9 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
   };
 
   const getCategoryLabel = () => {
-    if (isVisit) return `Visit • ${selectedRegion}`;
-    if (isTcpGuild) return "TCP • Guild";
-    if (isTcpFriend) return "TCP • Friend";
+    if (isVisit) return `Visit`;
+    if (isTcpGuild) return "TCP Guild";
+    if (isTcpFriend) return "TCP Friend";
     return pkg.name;
   };
 
@@ -175,7 +181,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
       {!user && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="game-card p-4 mb-6 border-warning bg-warning/10">
           <p className="text-sm text-center">
-            <span className="text-warning font-medium">⚠️ Please sign in</span> to place your order
+            <span className="text-warning font-medium">Please sign in</span> to place your order
           </p>
           <button onClick={onAuthRequired} className="w-full mt-3 py-2 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors font-medium">
             Sign In / Create Account
@@ -190,11 +196,17 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
             <p className="text-sm text-muted-foreground">{getCategoryLabel()}</p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-orbitron font-black text-primary flex items-center gap-1">
-              <Coins size={22} />
-              {price}
-            </div>
-            <div className="text-xs text-muted-foreground">Credits</div>
+            {isFreePackage ? (
+              <div className="text-2xl font-orbitron font-black text-emerald-400">FREE</div>
+            ) : (
+              <>
+                <div className="text-2xl font-orbitron font-black text-primary flex items-center gap-1">
+                  <Coins size={22} />
+                  {price}
+                </div>
+                <div className="text-xs text-muted-foreground">Credits</div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -219,9 +231,63 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
         </div>
       )}
 
+      {isFreePackage && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="game-card p-4 mb-6 border-emerald-500/25 bg-emerald-500/5"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+              <Shield size={20} className="text-emerald-400" />
+            </div>
+            <div>
+              <p className="font-bold text-sm text-emerald-400">AUTO-APPROVED</p>
+              <p className="text-xs text-muted-foreground">Free packages are approved instantly</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Server Selection */}
+        <div>
+          <Label className="font-poppins flex items-center gap-2 mb-2">
+            <Globe size={14} /> Select Server *
+          </Label>
+          <div className="grid grid-cols-2 gap-2">
+            {SERVERS.map((s) => (
+              <button
+                key={s.code}
+                type="button"
+                onClick={() => setServer(s.code)}
+                className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
+                  server === s.code
+                    ? "bg-primary/10 border-primary/40 shadow-[0_0_12px_hsl(var(--primary)/0.15)]"
+                    : "bg-card border-border hover:border-primary/30"
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
+                  server === s.code ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                }`}>
+                  {s.short}
+                </div>
+                <div className="text-left">
+                  <p className={`text-sm font-semibold ${server === s.code ? "text-primary" : "text-foreground"}`}>{s.label}</p>
+                  <p className="text-[10px] text-muted-foreground">{s.desc}</p>
+                </div>
+                {server === s.code && (
+                  <motion.div
+                    layoutId="order-server-check"
+                    className="absolute right-3 w-2 h-2 rounded-full bg-primary"
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="space-y-4">
-          {/* Visit: UID field */}
           {isVisit && (
             <div>
               <Label htmlFor="uid" className="font-poppins">Your UID *</Label>
@@ -229,7 +295,6 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
             </div>
           )}
 
-          {/* TCP Guild: Guild UID field */}
           {isTcpGuild && (
             <div>
               <Label htmlFor="guildUid" className="font-poppins">Guild UID *</Label>
@@ -237,7 +302,6 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
             </div>
           )}
 
-          {/* TCP Friend: UID field */}
           {isTcpFriend && (
             <div>
               <Label htmlFor="uid" className="font-poppins">Your UID *</Label>
