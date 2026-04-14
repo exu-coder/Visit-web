@@ -90,7 +90,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
       return;
     }
 
-    if (!hasEnoughCredits) {
+    if (!isFreePackage && !hasEnoughCredits) {
       toast({ title: "Insufficient Credits", description: `You need ${price} credits but only have ${creditBalance}.`, variant: "destructive" });
       return;
     }
