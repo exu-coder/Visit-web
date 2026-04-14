@@ -98,11 +98,13 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
     setIsSubmitting(true);
 
     try {
-      const { error: creditError } = await supabase
-        .from("profiles")
-        .update({ credit_balance: creditBalance - price })
-        .eq("user_id", user.id);
-      if (creditError) throw new Error("Failed to deduct credits");
+      if (!isFreePackage) {
+        const { error: creditError } = await supabase
+          .from("profiles")
+          .update({ credit_balance: creditBalance - price })
+          .eq("user_id", user.id);
+        if (creditError) throw new Error("Failed to deduct credits");
+      }
 
       const guildUidValue = isTcpGuild ? formData.guildUid : (isVisit || isTcpFriend ? formData.uid : formData.guildUid);
 
