@@ -59,7 +59,7 @@ const AuthModal = ({ isOpen, onClose, defaultMode = "signin" }: AuthModalProps) 
         } else {
           toast({
             title: "Account Created! 🎉",
-            description: "Welcome to ROSHAN GLORY SHOP!",
+            description: "Welcome to EXU GUILD TCP BOT!",
           });
           onClose();
         }
@@ -129,7 +129,7 @@ const AuthModal = ({ isOpen, onClose, defaultMode = "signin" }: AuthModalProps) 
             <p className="text-sm text-muted-foreground mt-1">
               {mode === "signin"
                 ? "Sign in to your account"
-                : "Join ROSHAN GLORY SHOP"}
+                : "Join EXU GUILD TCP BOT"}
             </p>
           </div>
 

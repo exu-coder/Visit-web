@@ -271,7 +271,7 @@ const SiteSettings = () => {
             </div>
             <div>
               <h4 className="font-orbitron font-bold">
-                {settings.site_name || "Roshan Glory Shop"}
+                {settings.site_name || "EXU GUILD TCP BOT"}
               </h4>
               {settings.tagline && (
                 <p className="text-xs text-muted-foreground">{settings.tagline}</p>
