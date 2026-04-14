@@ -114,7 +114,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
           user_id: user.id,
           product_id: pkg.id,
           product_name: pkg.name,
-          price: `${price} Credits`,
+          price: isFreePackage ? "FREE" : `${price} Credits`,
           price_value: price,
           trx_id: `CR-${Date.now()}`,
           guild_uid: guildUidValue,
@@ -126,7 +126,9 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
         });
 
       if (orderError) {
-        await supabase.from("profiles").update({ credit_balance: creditBalance }).eq("user_id", user.id);
+        if (!isFreePackage) {
+          await supabase.from("profiles").update({ credit_balance: creditBalance }).eq("user_id", user.id);
+        }
         throw new Error("Failed to create order");
       }
 
@@ -136,7 +138,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
         whatsapp_number: formData.whatsappNumber,
       }).eq("user_id", user.id);
 
-      toast({ title: "Order Submitted! 🎉", description: `${price} credits deducted. Check your profile for updates.` });
+      toast({ title: "Order Submitted!", description: isFreePackage ? "Your free order has been placed." : `${price} credits deducted. Check your profile for updates.` });
       onSubmit();
     } catch (error) {
       console.error("Order submission error:", error);
@@ -255,7 +257,7 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
 
         <motion.button
           type="submit"
-          disabled={isSubmitting || !hasEnoughCredits || !user}
+          disabled={isSubmitting || (!isFreePackage && !hasEnoughCredits) || !user}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="w-full neon-btn-solid rounded-xl py-4 text-lg font-bold flex items-center justify-center gap-2 disabled:opacity-50"
