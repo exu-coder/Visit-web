@@ -45,10 +45,16 @@ const ProductCard = ({ pkg, onSelect, index }: ProductCardProps) => {
       {/* Price in Credits */}
       <div className="flex items-center gap-2 mb-4">
         <Coins size={20} className="text-primary" />
-        <span className="font-orbitron text-2xl font-black text-primary glow-text">
-          {pkg.price}
-        </span>
-        <span className="text-sm text-muted-foreground">Credits</span>
+        {pkg.price === 0 ? (
+          <span className="font-orbitron text-2xl font-black text-green-500 glow-text">FREE</span>
+        ) : (
+          <>
+            <span className="font-orbitron text-2xl font-black text-primary glow-text">
+              {pkg.price}
+            </span>
+            <span className="text-sm text-muted-foreground">Credits</span>
+          </>
+        )}
       </div>
 
       {/* Features */}

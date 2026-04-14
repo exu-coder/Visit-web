@@ -526,7 +526,7 @@ const PackagesManager = () => {
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-primary font-orbitron font-bold">
-                          ৳{pkg.price}
+                          {pkg.price === 0 ? "FREE" : `৳${pkg.price}`}
                         </span>
                         {pkg.original_price && (
                           <span className="text-muted-foreground line-through">
