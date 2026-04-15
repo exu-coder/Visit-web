@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface FreeVisitFormProps {
   selectedRegion: string;
@@ -23,23 +23,42 @@ const SERVERS = [
 const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: FreeVisitFormProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [uid, setUid] = useState("");
   const [server, setServer] = useState(selectedRegion === "India" ? "ind" : "bd");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: trialUsed, isLoading: trialLoading } = useQuery({
+  const { data: trialInfo, isLoading: trialLoading } = useQuery({
     queryKey: ["free-trial", user?.id],
     queryFn: async () => {
-      if (!user) return false;
-      const { data } = await supabase
-        .from("free_trial_uses")
-        .select("id")
-        .eq("user_id", user.id)
+      if (!user) return { used: 0, limit: 3 };
+      
+      // Get daily limit setting
+      const { data: limitSetting } = await supabase
+        .from("site_settings")
+        .select("setting_value")
+        .eq("setting_key", "free_trial_user_daily_limit")
         .maybeSingle();
-      return !!data;
+      
+      const dailyLimit = parseInt(limitSetting?.setting_value || "3") || 0;
+      
+      // Count today's usage
+      const todayStart = new Date();
+      todayStart.setUTCHours(0, 0, 0, 0);
+      
+      const { count } = await supabase
+        .from("free_trial_uses")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .gte("used_at", todayStart.toISOString());
+      
+      return { used: count || 0, limit: dailyLimit };
     },
     enabled: !!user,
   });
+
+  const trialUsed = trialInfo ? (trialInfo.limit > 0 && trialInfo.used >= trialInfo.limit) : false;
+  const remainingUses = trialInfo ? (trialInfo.limit > 0 ? trialInfo.limit - trialInfo.used : Infinity) : 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +83,7 @@ const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: Fre
       if (error) throw new Error(error.message || "API call failed");
       if (data?.error) throw new Error(data.error);
 
+      queryClient.invalidateQueries({ queryKey: ["free-trial", user?.id] });
       onResult(data.data);
     } catch (error) {
       console.error("Visit API error:", error);
@@ -101,11 +121,15 @@ const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: Fre
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-            <Zap size={20} className="text-emerald-400" />
+          <Zap size={20} className="text-emerald-400" />
           </div>
           <div>
             <p className="font-bold text-sm text-emerald-400">FREE TRIAL</p>
-            <p className="text-xs text-muted-foreground">One visit per account - No credits required</p>
+            <p className="text-xs text-muted-foreground">
+              {trialInfo && trialInfo.limit > 0
+                ? `${Math.max(0, trialInfo.limit - trialInfo.used)} of ${trialInfo.limit} uses remaining today`
+                : "Unlimited free visits"}
+            </p>
           </div>
         </div>
       </motion.div>
@@ -122,7 +146,7 @@ const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: Fre
       {user && trialUsed && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="game-card p-4 mb-6 border-destructive/30 bg-destructive/5">
           <p className="text-sm text-center text-destructive font-medium">
-            You have already used your free trial. Purchase a visit package for continued access.
+            You've used all {trialInfo?.limit} free visits for today. Come back tomorrow!
           </p>
         </motion.div>
       )}
