@@ -23,6 +23,7 @@ const SERVERS = [
 const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: FreeVisitFormProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [uid, setUid] = useState("");
   const [server, setServer] = useState(selectedRegion === "India" ? "ind" : "bd");
   const [isSubmitting, setIsSubmitting] = useState(false);
