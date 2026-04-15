@@ -119,11 +119,15 @@ const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: Fre
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-            <Zap size={20} className="text-emerald-400" />
+          <Zap size={20} className="text-emerald-400" />
           </div>
           <div>
             <p className="font-bold text-sm text-emerald-400">FREE TRIAL</p>
-            <p className="text-xs text-muted-foreground">One visit per account - No credits required</p>
+            <p className="text-xs text-muted-foreground">
+              {trialInfo && trialInfo.limit > 0
+                ? `${Math.max(0, trialInfo.limit - trialInfo.used)} of ${trialInfo.limit} uses remaining today`
+                : "Unlimited free visits"}
+            </p>
           </div>
         </div>
       </motion.div>
@@ -140,7 +144,7 @@ const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: Fre
       {user && trialUsed && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="game-card p-4 mb-6 border-destructive/30 bg-destructive/5">
           <p className="text-sm text-center text-destructive font-medium">
-            You have already used your free trial. Purchase a visit package for continued access.
+            You've used all {trialInfo?.limit} free visits for today. Come back tomorrow!
           </p>
         </motion.div>
       )}
