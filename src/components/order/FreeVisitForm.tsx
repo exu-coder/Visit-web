@@ -83,6 +83,7 @@ const FreeVisitForm = ({ selectedRegion, onBack, onResult, onAuthRequired }: Fre
       if (error) throw new Error(error.message || "API call failed");
       if (data?.error) throw new Error(data.error);
 
+      queryClient.invalidateQueries({ queryKey: ["free-trial", user?.id] });
       onResult(data.data);
     } catch (error) {
       console.error("Visit API error:", error);
