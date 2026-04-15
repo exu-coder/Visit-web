@@ -254,6 +254,56 @@ const SiteSettings = () => {
         </div>
       </motion.div>
 
+      {/* Free Trial Limits */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="game-card p-6 space-y-6"
+      >
+        <div className="flex items-center gap-3 pb-4 border-b border-border">
+          <Zap size={24} className="text-emerald-400" />
+          <div>
+            <h3 className="font-semibold">Free Trial Limits</h3>
+            <p className="text-sm text-muted-foreground">
+              Control how many free visits users can use
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-6">
+          <div>
+            <Label>Per User Daily Limit</Label>
+            <Input
+              type="number"
+              min="0"
+              value={settings.free_trial_user_daily_limit || ""}
+              onChange={(e) => updateSetting("free_trial_user_daily_limit", e.target.value)}
+              placeholder="3"
+              className="mt-2"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              How many free visits a single user can use per day (0 = unlimited)
+            </p>
+          </div>
+
+          <div>
+            <Label>Total Daily Limit (All Users)</Label>
+            <Input
+              type="number"
+              min="0"
+              value={settings.free_trial_total_daily_limit || ""}
+              onChange={(e) => updateSetting("free_trial_total_daily_limit", e.target.value)}
+              placeholder="100"
+              className="mt-2"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Maximum free visits across all users per day (0 = unlimited)
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Preview */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
