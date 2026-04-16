@@ -90,6 +90,13 @@ const CreditCouponsManager = () => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const copyAllUnredeemed = () => {
+    const codes = coupons.filter(c => !c.is_redeemed).map(c => c.code).join("\n");
+    if (!codes) return;
+    navigator.clipboard.writeText(codes);
+    toast({ title: "Copied!", description: `All ${coupons.filter(c => !c.is_redeemed).length} unredeemed codes copied to clipboard` });
+  };
+
   const deleteAllRedeemed = async () => {
     if (!confirm("Are you sure you want to delete ALL redeemed credit coupons? This cannot be undone.")) return;
     setIsDeletingUsed(true);
