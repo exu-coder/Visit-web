@@ -92,6 +92,18 @@ const ProfileSection = ({ onAuthRequired }: ProfileSectionProps) => {
         return;
       }
 
+      // Fetch current balance first to avoid stale state
+      const { data: currentProfile, error: profileFetchError } = await supabase
+        .from("profiles")
+        .select("credit_balance")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (profileFetchError || !currentProfile) {
+        toast({ title: "Error", description: "Could not fetch your profile. Try again.", variant: "destructive" });
+        return;
+      }
+
       // Redeem: mark coupon as used and add credits
       const { error: updateError } = await supabase
         .from("credit_coupons")
@@ -100,16 +112,18 @@ const ProfileSection = ({ onAuthRequired }: ProfileSectionProps) => {
 
       if (updateError) throw updateError;
 
-      const newBalance = creditBalance + coupon.credit_amount;
-      await supabase
+      const newBalance = (currentProfile.credit_balance || 0) + coupon.credit_amount;
+      const { error: balanceError } = await supabase
         .from("profiles")
         .update({ credit_balance: newBalance })
         .eq("user_id", user.id);
 
+      if (balanceError) throw balanceError;
+
       setCreditBalance(newBalance);
       setCouponCode("");
       toast({
-        title: "Credits Added! 🎉",
+        title: "Credits Added!",
         description: `${coupon.credit_amount} credits have been added to your account.`,
       });
     } catch (error) {
