@@ -90,6 +90,13 @@ const CreditCouponsManager = () => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const copyAllUnredeemed = () => {
+    const codes = coupons.filter(c => !c.is_redeemed).map(c => c.code).join("\n");
+    if (!codes) return;
+    navigator.clipboard.writeText(codes);
+    toast({ title: "Copied!", description: `All ${coupons.filter(c => !c.is_redeemed).length} unredeemed codes copied to clipboard` });
+  };
+
   const deleteAllRedeemed = async () => {
     if (!confirm("Are you sure you want to delete ALL redeemed credit coupons? This cannot be undone.")) return;
     setIsDeletingUsed(true);
@@ -127,16 +134,27 @@ const CreditCouponsManager = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-xl font-orbitron font-bold">Credit Coupons</h2>
-        {coupons.some(c => c.is_redeemed) && (
-          <button
-            onClick={deleteAllRedeemed}
-            disabled={isDeletingUsed}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50 text-sm"
-          >
-            {isDeletingUsed ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-            Delete All Redeemed
-          </button>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {coupons.some(c => !c.is_redeemed) && (
+            <button
+              onClick={copyAllUnredeemed}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors text-sm"
+            >
+              <Copy size={16} />
+              Copy All Codes
+            </button>
+          )}
+          {coupons.some(c => c.is_redeemed) && (
+            <button
+              onClick={deleteAllRedeemed}
+              disabled={isDeletingUsed}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50 text-sm"
+            >
+              {isDeletingUsed ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+              Delete All Redeemed
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Generate Form */}
