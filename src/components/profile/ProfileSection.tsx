@@ -150,19 +150,46 @@ const ProfileSection = ({ onAuthRequired }: ProfileSectionProps) => {
     };
   }, [user, toast]);
 
+  const logAttempt = async (code: string, success: boolean) => {
+    if (!user) return;
+    await supabase.from("coupon_redemption_attempts").insert({
+      user_id: user.id,
+      code_attempted: code,
+      success,
+    });
+  };
+
   const redeemCoupon = async () => {
     if (!user || !couponCode.trim()) return;
 
     setIsRedeeming(true);
+    const codeToTry = couponCode.toUpperCase().trim();
+
     try {
+      // Rate limit check (server-side)
+      const { data: rateLimit, error: rateLimitError } = await supabase
+        .rpc("check_coupon_redemption_rate_limit", { _user_id: user.id });
+
+      if (rateLimitError) {
+        console.error("Rate limit check error:", rateLimitError);
+      } else if (rateLimit && rateLimit.length > 0 && !rateLimit[0].allowed) {
+        toast({
+          title: "Slow down",
+          description: rateLimit[0].reason || "Too many attempts. Try again later.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data: coupon, error: couponError } = await supabase
         .from("credit_coupons")
         .select("*")
-        .eq("code", couponCode.toUpperCase().trim())
+        .eq("code", codeToTry)
         .eq("is_redeemed", false)
         .maybeSingle();
 
       if (couponError || !coupon) {
+        await logAttempt(codeToTry, false);
         toast({ title: "Invalid Code", description: "This credit code is invalid or already used.", variant: "destructive" });
         return;
       }
@@ -174,6 +201,7 @@ const ProfileSection = ({ onAuthRequired }: ProfileSectionProps) => {
         .maybeSingle();
 
       if (profileFetchError || !currentProfile) {
+        await logAttempt(codeToTry, false);
         toast({ title: "Error", description: "Could not fetch your profile. Try again.", variant: "destructive" });
         return;
       }
@@ -193,15 +221,18 @@ const ProfileSection = ({ onAuthRequired }: ProfileSectionProps) => {
 
       if (balanceError) throw balanceError;
 
-      // Log transaction
-      await supabase.from("credit_transactions").insert({
-        user_id: user.id,
-        type: "coupon_redemption",
-        amount: coupon.credit_amount,
-        balance_after: newBalance,
-        description: `Redeemed coupon ${coupon.code}`,
-        related_coupon_id: coupon.id,
-      });
+      // Log transaction & successful attempt
+      await Promise.all([
+        supabase.from("credit_transactions").insert({
+          user_id: user.id,
+          type: "coupon_redemption",
+          amount: coupon.credit_amount,
+          balance_after: newBalance,
+          description: `Redeemed coupon ${coupon.code}`,
+          related_coupon_id: coupon.id,
+        }),
+        logAttempt(codeToTry, true),
+      ]);
 
       setCreditBalance(newBalance);
       setCouponCode("");
@@ -212,6 +243,7 @@ const ProfileSection = ({ onAuthRequired }: ProfileSectionProps) => {
       fetchData();
     } catch (error) {
       console.error("Redeem error:", error);
+      await logAttempt(codeToTry, false);
       toast({ title: "Error", description: "Failed to redeem coupon", variant: "destructive" });
     } finally {
       setIsRedeeming(false);
