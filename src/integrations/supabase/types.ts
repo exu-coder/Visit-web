@@ -50,6 +50,33 @@ export type Database = {
         }
         Relationships: []
       }
+      coupon_redemption_attempts: {
+        Row: {
+          code_attempted: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          success: boolean
+          user_id: string
+        }
+        Insert: {
+          code_attempted: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          success?: boolean
+          user_id: string
+        }
+        Update: {
+          code_attempted?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          success?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       coupon_uses: {
         Row: {
           coupon_id: string
@@ -454,6 +481,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_coupon_redemption_rate_limit: {
+        Args: { _user_id: string }
+        Returns: {
+          allowed: boolean
+          reason: string
+          retry_after_seconds: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
