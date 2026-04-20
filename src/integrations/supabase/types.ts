@@ -164,6 +164,42 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_transactions: {
+        Row: {
+          amount: number
+          balance_after: number
+          created_at: string
+          description: string | null
+          id: string
+          related_coupon_id: string | null
+          related_order_id: string | null
+          type: Database["public"]["Enums"]["credit_transaction_type"]
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          related_coupon_id?: string | null
+          related_order_id?: string | null
+          type: Database["public"]["Enums"]["credit_transaction_type"]
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          related_coupon_id?: string | null
+          related_order_id?: string | null
+          type?: Database["public"]["Enums"]["credit_transaction_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       free_trial_uses: {
         Row: {
           id: string
@@ -428,6 +464,11 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      credit_transaction_type:
+        | "coupon_redemption"
+        | "order_payment"
+        | "admin_adjustment"
+        | "refund"
       order_status: "pending" | "approved" | "rejected" | "completed"
     }
     CompositeTypes: {
@@ -557,6 +598,12 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      credit_transaction_type: [
+        "coupon_redemption",
+        "order_payment",
+        "admin_adjustment",
+        "refund",
+      ],
       order_status: ["pending", "approved", "rejected", "completed"],
     },
   },
