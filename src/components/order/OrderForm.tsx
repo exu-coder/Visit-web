@@ -104,17 +104,18 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
     setIsSubmitting(true);
 
     try {
+      const newBalance = creditBalance - price;
       if (!isFreePackage) {
         const { error: creditError } = await supabase
           .from("profiles")
-          .update({ credit_balance: creditBalance - price })
+          .update({ credit_balance: newBalance })
           .eq("user_id", user.id);
         if (creditError) throw new Error("Failed to deduct credits");
       }
 
       const guildUidValue = isTcpGuild ? formData.guildUid : (isVisit || isTcpFriend ? formData.uid : formData.guildUid);
 
-      const { error: orderError } = await supabase
+      const { data: orderData, error: orderError } = await supabase
         .from("orders")
         .insert({
           user_id: user.id,
@@ -129,13 +130,27 @@ const OrderForm = ({ pkg, selectedRegion, onBack, onSubmit, onAuthRequired }: Or
           whatsapp_number: formData.whatsappNumber,
           payment_method: "credits",
           status: isFreePackage ? "approved" : "pending",
-        });
+        })
+        .select("id")
+        .single();
 
       if (orderError) {
         if (!isFreePackage) {
           await supabase.from("profiles").update({ credit_balance: creditBalance }).eq("user_id", user.id);
         }
         throw new Error("Failed to create order");
+      }
+
+      // Log credit transaction
+      if (!isFreePackage && orderData) {
+        await supabase.from("credit_transactions").insert({
+          user_id: user.id,
+          type: "order_payment",
+          amount: -price,
+          balance_after: newBalance,
+          description: `Payment for ${pkg.name}`,
+          related_order_id: orderData.id,
+        });
       }
 
       await supabase.from("profiles").update({
