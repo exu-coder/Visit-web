@@ -1,73 +1,30 @@
-# Welcome to your Lovable project
+# Visit-web
 
-## Project info
+Visit-web is a React + Vite web application with a standalone Node.js API backed by MongoDB Atlas.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Stack
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
+- React + TypeScript
 - Vite
-- TypeScript
-- React
-- shadcn-ui
 - Tailwind CSS
+- Express
+- MongoDB Atlas
 
-## How can I deploy this project?
+## Local development
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+1. Install Node.js 20+.
+2. Copy `.env.example` to `.env`.
+3. Set `MONGODB_URI`, `MONGODB_DB`, and `AUTH_SECRET`.
+4. Install dependencies with `npm install`.
+5. Run the frontend with `npm run dev`.
+6. Run the API with `npm run server`.
 
-## Can I connect a custom domain to my Lovable project?
+The frontend uses `/api` for application data and authentication. Set `VITE_API_URL` when the API is hosted separately.
 
-Yes, you can!
+## MongoDB
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+The application database is `visit_web`. Core collections include profiles, user roles, orders, packages, coupons, payments, announcements, and site settings.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Deployment
+
+Deploy the Vite frontend and Node API using your preferred hosting provider. Configure the MongoDB connection string and authentication secret as server environment variables; never commit them to Git.
