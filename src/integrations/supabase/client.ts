@@ -7,38 +7,30 @@ class QueryBuilder<T = any> implements PromiseLike<ApiResult<T>> {
   private method = "GET";
   private payload: any = {};
   private filters: Record<string, any> = {};
-
   constructor(table: string) { this.table = table; }
   select(_columns = "*") { return this; }
   eq(column: string, value: any) { this.filters[column] = value; return this; }
   neq(column: string, value: any) { this.filters[column] = { $ne: value }; return this; }
-  order(column: string, options: { ascending?: boolean } = {}) {
-    this.payload.sort = { [column]: options.ascending === false ? -1 : 1 }; return this;
-  }
+  order(column: string, options: { ascending?: boolean } = {}) { this.payload.sort = { [column]: options.ascending === false ? -1 : 1 }; return this; }
   limit(value: number) { this.payload.limit = value; return this; }
   maybeSingle() { this.payload.single = true; return this; }
   insert(data: any) { this.method = "POST"; this.payload.data = Array.isArray(data) ? data[0] : data; return this; }
   update(data: any) { this.method = "PATCH"; this.payload.data = data; return this; }
   delete() { this.method = "DELETE"; return this; }
-  then<TResult1 = ApiResult<T>, TResult2 = never>(onfulfilled?: ((value: ApiResult<T>) => TResult1 | PromiseLike<TResult1>) | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null) {
-    return this.execute().then(onfulfilled, onrejected);
-  }
+  then<TResult1 = ApiResult<T>, TResult2 = never>(onfulfilled?: ((value: ApiResult<T>) => TResult1 | PromiseLike<TResult1>) | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null) { return this.execute().then(onfulfilled, onrejected); }
   private async execute(): Promise<ApiResult<T>> {
     try {
       this.payload.filter = this.filters;
-      const response = await fetch(`${API_BASE}/api/data/${encodeURIComponent(this.table)}`, {
-        method: this.method,
-        headers: { "Content-Type": "application/json" },
-        body: this.method === "GET" ? undefined : JSON.stringify(this.payload),
-      });
+      let url = `${API_BASE}/api/data/${encodeURIComponent(this.table)}`;
+      if (this.method === "GET") url += `?filter=${encodeURIComponent(JSON.stringify(this.filters))}&sort=${encodeURIComponent(JSON.stringify(this.payload.sort || { created_at: -1 }))}&limit=${this.payload.limit || 500}`;
+      const token = localStorage.getItem("visit_access_token");
+      const response = await fetch(url, { method: this.method, headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: this.method === "GET" ? undefined : JSON.stringify(this.payload) });
       const result = await response.json();
       if (!response.ok) return { data: null, error: new Error(result.error || "Request failed") };
       let data = result.data;
       if (this.payload.single) data = Array.isArray(data) ? (data[0] || null) : data;
       return { data, error: null, count: result.count };
-    } catch (error) {
-      return { data: null, error: error instanceof Error ? error : new Error(String(error)) };
-    }
+    } catch (error) { return { data: null, error: error instanceof Error ? error : new Error(String(error)) }; }
   }
 }
 
