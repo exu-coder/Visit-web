@@ -61,7 +61,6 @@ app.get("/api/auth/session", async (req, res) => {
     res.json({ user: { id, email: user.email }, session: { access_token: raw } });
   } catch { res.status(401).json({ error: "Invalid session" }); }
 });
-
 app.post("/api/auth/signout", (_req, res) => res.json({ ok: true }));
 
 const collections = new Set(["profiles", "user_roles", "orders", "packages", "coupons", "credit_coupons", "payments", "announcements", "site_settings", "payment_methods", "coupon_uses", "coupon_redemption_attempts", "credit_transactions", "free_trial_uses"]);
@@ -72,8 +71,11 @@ app.all("/api/data/:collection", async (req, res) => {
     const database = await getDb();
     const collection = database.collection(req.params.collection);
     const body = req.body || {};
+    const filter = req.method === "GET" ? JSON.parse(req.query.filter || "{}") : (body.filter || {});
+    const sort = req.method === "GET" ? JSON.parse(req.query.sort || "{\"created_at\":-1}") : (body.sort || { created_at: -1 });
+    const limit = Math.min(Number(req.query.limit || body.limit || 500), 1000);
     if (req.method === "GET") {
-      const data = await collection.find(body.filter || {}).sort(body.sort || { created_at: -1 }).limit(Math.min(Number(body.limit) || 500, 1000)).toArray();
+      const data = await collection.find(filter).sort(sort).limit(limit).toArray();
       return res.json({ data, error: null });
     }
     if (req.method === "POST") {
@@ -82,12 +84,12 @@ app.all("/api/data/:collection", async (req, res) => {
       return res.status(201).json({ data: { ...doc, id: result.insertedId.toString() }, error: null });
     }
     if (req.method === "PATCH") {
-      const selector = body.id && ObjectId.isValid(body.id) ? { _id: new ObjectId(body.id) } : (body.filter || {});
+      const selector = body.id && ObjectId.isValid(body.id) ? { _id: new ObjectId(body.id) } : filter;
       const result = await collection.updateMany(selector, { $set: { ...(body.data || {}), updated_at: new Date() } });
       return res.json({ data: null, count: result.modifiedCount, error: null });
     }
     if (req.method === "DELETE") {
-      const selector = body.id && ObjectId.isValid(body.id) ? { _id: new ObjectId(body.id) } : (body.filter || {});
+      const selector = body.id && ObjectId.isValid(body.id) ? { _id: new ObjectId(body.id) } : filter;
       const result = await collection.deleteMany(selector);
       return res.json({ data: null, count: result.deletedCount, error: null });
     }
